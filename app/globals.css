@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #4d6bfe ; /* Example primary color */
+}
+
+html{
+   @apply scroll-smooth  
+}
+
+::-webkit-scrollbar{
+  display: none; /* Hide scrollbar for webkit browsers */;
+}
