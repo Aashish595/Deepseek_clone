@@ -1,22 +1,11 @@
-import mongoose  from "mongoose";
+import mongoose from 'mongoose';
 
-const ChatSchema = new mongoose.Schema(
-    {
-        name: {type: String, required: true},
-        messages: [
-            {
-                role: {type: String, required: true},
-                content: {type: String, required: true},
-                timestamp: {type: Number, required: true},
-            },
-        ],
-        userId: {type: String, required: true },
-    },
-    {
-        timestamps: true,
-    }
-)
+const chatSchema = new mongoose.Schema({
+  userId: { type: String, required: true },
+  messages: { type: Array, default: [] },
+  createdAt: { type: Date, default: Date.now }
+});
 
-const Chat = mongoose.models.Chat || mongoose.model("Chat", ChatSchema)
+const Chat = mongoose.models.Chat || mongoose.model('Chat', chatSchema);
 
 export default Chat;
