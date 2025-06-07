@@ -5,12 +5,10 @@ import User from "@/models/User";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
-// Always export const POST for Next.js App Router API routes
 export const POST = async (req) => {
   console.log("✅ Webhook called");
 
   try {
-    // Verify the webhook
     const wh = new Webhook(process.env.SIGNING_SECRET);
     const headerPayload = headers();
     const svixHeaders = {
@@ -25,37 +23,28 @@ export const POST = async (req) => {
     const { data, type } = wh.verify(body, svixHeaders);
     console.log(`✅ Received Clerk Webhook: ${type}`);
 
-    // Connect to database
     await connectDB();
 
-    // Prepare user data
-    const userData = {
-      _id: data.id,
-      email: data.email_addresses[0].email_address,
-      name: `${data.first_name} ${data.last_name}`,
-      image: data.image_url,
-    };
+    if (type === "user.created" || type === "user.updated") {
+      const userData = {
+        _id: data.id,
+        email: data.email_addresses?.[0]?.email_address || "",
+        name: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
+        image: data.image_url || "",
+      };
 
-    // Handle different Clerk event types
-    switch (type) {
-      case "user.created":
+      if (type === "user.created") {
         await User.create(userData);
         console.log(`👤 User created: ${userData.email}`);
-        break;
-
-      case "user.updated":
+      } else {
         await User.findByIdAndUpdate(data.id, userData);
         console.log(`🔄 User updated: ${userData.email}`);
-        break;
+      }
+    }
 
-      case "user.deleted":
-        await User.findByIdAndDelete(data.id);
-        console.log(`❌ User deleted: ${userData.email}`);
-        break;
-
-      default:
-        console.log("⚠️ Unhandled Clerk event type:", type);
-        break;
+    if (type === "user.deleted") {
+      await User.findByIdAndDelete(data.id);
+      console.log(`❌ User deleted: ${data.id}`);
     }
 
     return NextResponse.json({ message: "Event received" });
