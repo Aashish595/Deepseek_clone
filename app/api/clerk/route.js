@@ -11,7 +11,7 @@ export const POST = async (req) => {
 
   try {
     // Verify the webhook
-    const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
+    const wh = new Webhook(process.env.SIGNING_SECRET);
     const headerPayload = headers();
     const svixHeaders = {
       "svix-id": headerPayload.get("svix-id"),
