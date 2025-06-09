@@ -1,75 +1,42 @@
-import { assets } from "@/assets/assets";
-import { useAppContext } from "@/context/AppContext";
-import { useClerk, UserButton } from "@clerk/nextjs";
-import Image from "next/image";
-import React, { useState, useRef, useEffect } from "react";
-import ChatLabel from "./ChatLabel";
+import { assets } from '@/assets/assets'
+import { useAppContext } from '@/context/AppContext';
+import { useClerk, UserButton } from '@clerk/nextjs';
+import Image from 'next/image'
+import React, { useState } from 'react'
+import ChatLabel from './ChatLabel';
 
 const Sidebar = ({ expand, setExpand }) => {
   const { openSignIn } = useClerk();
   const { user } = useAppContext();
-  const [openMenu, setOpenMenu] = useState({ id: 0, open: false });
-  const sidebarRef = useRef(null);
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-        setOpenMenu({ id: 0, open: false });
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const toggleSidebar = () => {
-    setExpand(!expand);
-    setOpenMenu({ id: 0, open: false });
-  };
+  const [openMenu, setOpenMenu] = useState({ id: 0, open: false});
 
   return (
     <div
-      ref={sidebarRef}
       className={`flex flex-col justify-between bg-[#212327] pt-7 transition-all z-50 max-md:absolute max-md:h-screen ${
         expand ? "p-4 w-64" : "md:w-20 w-0 max-md:overflow-hidden"
-      }`}
+      } `}
     >
       <div>
-        {/* Logo and Toggle Button */}
         <div
           className={`flex ${
             expand ? "flex-row gap-10" : "flex-col items-center gap-8"
           }`}
         >
           <Image
+            className={expand ? "w-36" : "w-10"}
             src={expand ? assets.logo_text : assets.logo_icon}
-            alt="DeepSeek Logo"
-            width={expand ? 144 : 40}
-            height={40}
-            className={expand ? "w-36 h-auto" : "w-10 h-auto"}
+            alt=""
           />
 
-          <button
-            onClick={toggleSidebar}
+          <div
+            onClick={() => (expand ? setExpand(false) : setExpand(true))}
             className="group relative flex items-center justify-center hover:bg-gray-500/20 transition-all duration-300 h-9 w-9 aspect-square rounded-lg cursor-pointer"
-            aria-label={expand ? "Close sidebar" : "Open sidebar"}
           >
-            <Image
-              src={assets.menu_icon}
-              alt="Mobile menu toggle"
-              width={24}
-              height={24}
-              className="md:hidden w-6 h-auto"
-            />
+            <Image src={assets.menu_icon} alt="" className="md:hidden" />
             <Image
               src={expand ? assets.sidebar_close_icon : assets.sidebar_icon}
-              alt="Desktop menu toggle"
-              width={28}
-              height={28}
-              className="hidden md:block w-7 h-auto"
+              alt=""
+              className="hidden md:block w-7"
             />
             <div
               className={`absolute w-max ${
@@ -85,24 +52,21 @@ const Sidebar = ({ expand, setExpand }) => {
                 }`}
               ></div>
             </div>
-          </button>
+          </div>
         </div>
 
-        {/* New Chat Button */}
+        {/* button to start chat */}
         <button
           className={`mt-8 flex items-center justify-center cursor-pointer ${
             expand
               ? "bg-primary hover:opacity-90 rounded-2xl gap-2 p-2.5 w-max"
               : "group relative h-9 w-9 mx-auto hover:bg-gray-500/30 rounded-lg"
           }`}
-          aria-label="New chat"
         >
           <Image
+            className={expand ? "w-6" : "w-7"}
             src={expand ? assets.chat_icon : assets.chat_icon_dull}
-            alt="New chat icon"
-            width={expand ? 24 : 28}
-            height={expand ? 24 : 28}
-            className={expand ? "w-6 h-auto" : "w-7 h-auto"}
+            alt=""
           />
           <div className="absolute w-max -top-12 -right-12 opacity-0 group-hover:opacity-100 transition bg-black text-white text-sm px-3 py-2 rounded-lg shadow-lg pointer-events-none">
             New chat
@@ -111,33 +75,30 @@ const Sidebar = ({ expand, setExpand }) => {
           {expand && <p className="text-white font-medium">New chat</p>}
         </button>
 
-        {/* Recent Chats Section */}
+        {/* display recent chats */}
         <div
           className={`mt-8 text-white/25 text-sm ${
             expand ? "block" : "hidden"
           }`}
         >
           <p className="my-1">Recents</p>
-          <ChatLabel openMenu={openMenu} setOpenMenu={setOpenMenu} />
+          {/* chatLabel */}
+          <ChatLabel openMenu={openMenu} setOpenMenu={setOpenMenu}  />
         </div>
       </div>
 
-      {/* Bottom Section */}
       <div>
-        {/* Get App Button */}
         <div
-          className={`flex items-center group relative ${
+          className={`flex items-center cursor-pointer group relative ${
             expand
               ? "gap-1 text-white/80 text-sm p-2.5 border border-primary rounded-lg hover:bg-white/10 cursor-pointer"
               : "h-10 w-10 mx-auto hover:bg-gray-500/30 rounded-lg"
           }`}
         >
           <Image
+            className={expand ? "w-5" : "w-6.5 mx-auto"}
             src={expand ? assets.phone_icon : assets.phone_icon_dull}
-            alt="Get app icon"
-            width={expand ? 20 : 26}
-            height={expand ? 20 : 26}
-            className={expand ? "w-5 h-auto" : "w-6.5 h-auto mx-auto"}
+            alt=""
           />
           <div
             className={`absolute -top-60 pb-8 ${
@@ -145,14 +106,8 @@ const Sidebar = ({ expand, setExpand }) => {
             } opacity-0 group-hover:opacity-100 hidden group-hover:block transition`}
           >
             <div className="relative w-max bg-black text-white text-sm p-3 rounded-lg shadow-lg">
-              <Image
-                src={assets.qrcode}
-                alt="QR Code"
-                width={176}
-                height={176}
-                className="w-44 h-auto"
-              />
-              <p>Scan to get DeepSeek App</p>
+              <Image src={assets.qrcode} alt="" className="w-44" />
+              <p>Scan to get DeekSeek App</p>
               <div
                 className={`w-3 h-3 absolute bg-black rotate-45 ${
                   expand ? "right-1/2" : "left-4 -bottom-1.5"
@@ -162,39 +117,22 @@ const Sidebar = ({ expand, setExpand }) => {
           </div>
           {expand && (
             <>
-              <span>Get App</span>
-              <Image
-                src={assets.new_icon}
-                alt="New"
-                width={16}
-                height={16}
-                className="w-4 h-auto"
-              />
+              <span>Get App</span> <Image alt="" src={assets.new_icon} />
             </>
           )}
         </div>
 
-        {/* User Profile */}
+        {/* user icon and profile */}
         <div
-          onClick={user ? null : openSignIn}
+          onClick={ user ? null : openSignIn }
           className={`flex items-center ${
             expand ? "hover:bg-white/10 rounded-lg" : "justify-center w-full"
           } gap-3 text-white/60 text-sm p-2 mt-2 cursor-pointer`}
         >
-          {user ? (
-            <UserButton />
-          ) : (
-            <Image
-              src={assets.profile_icon}
-              alt="Profile"
-              width={28}
-              height={28}
-              style={{
-                width: "auto",
-                height: "auto", // Maintain aspect ratio
-              }}
-            />
-          )}
+          {
+            user ? <UserButton />
+            : <Image src={assets.profile_icon} alt="" className="w-7" /> 
+          }
           {expand && <span>My Profile</span>}
         </div>
       </div>
@@ -202,4 +140,4 @@ const Sidebar = ({ expand, setExpand }) => {
   );
 };
 
-export default Sidebar;
+export default Sidebar

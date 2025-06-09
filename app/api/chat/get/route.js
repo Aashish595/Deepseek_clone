@@ -1,12 +1,12 @@
 
 import connectDB from "@/config/db";
 import Chat from "@/models/Chat";
-import { auth } from "@clerk/nextjs";  // Updated import
+import { getAuth } from "@clerk/nextjs/server";  
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
     try {
-        const { userId } = auth();  // Updated usage
+        const { userId } = getAuth(req);  // Updated usage
 
         if(!userId){
             return NextResponse.json({ success: false, message: "User not authenticated", })

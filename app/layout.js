@@ -2,11 +2,13 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AppContextProvider } from "@/context/AppContext";
+import { Toaster } from "react-hot-toast";
+
+
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  display: 'swap', // Add this for better font loading
 });
 
 export const metadata = {
@@ -15,15 +17,23 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  
   return (
-    <ClerkProvider>
+    <ClerkProvider >
       <html lang="en">
         <body className={`${inter.className} antialiased`}>
           <AppContextProvider>
-            {children}
+            <Toaster toastOptions={{
+              success: { style: { background: "black", color: "white" } },
+              error: { style: { background: "red", color: "white" } },
+            }} />
+            { children}
+            {/* <div>{ children}</div> */}
           </AppContextProvider>
         </body>
       </html>
     </ClerkProvider>
   );
 }
+
+

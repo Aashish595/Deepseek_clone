@@ -1,129 +1,169 @@
 import { assets } from "@/assets/assets";
 import Image from "next/image";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
+import { useAppContext } from "@/context/AppContext";
+import toast from "react-hot-toast";
 
-const PromptBox = ({ isLoading, onSendMessage }) => {
+const PromptBox = ({ isLoading, setIsLoading }) => {
   const [prompt, setPrompt] = useState("");
-  const textareaRef = useRef(null);
-  const [isComposing, setIsComposing] = useState(false);
+  const [messages, setMessages] = useState([]);
 
-  // Auto-resize textarea based on content
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(
-        textareaRef.current.scrollHeight,
-        200 // max height in pixels
-      )}px`;
+  const {
+    user,
+    chats,
+    setChats,
+    selectedChat,
+    setSelectedChat,
+    fetchUserChats,
+  } = useAppContext();
+
+  const handlekeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendPrompt(e);
     }
-  }, [prompt]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!prompt.trim() || isLoading) return;
-
-    onSendMessage(prompt);
-    setPrompt("");
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey && !isComposing) {
+  const sendPrompt = async (e) => {
+    const promptCopy = prompt;
+
+    try {
       e.preventDefault();
-      handleSubmit(e);
+      if (!user) return toast.error("login to send a message");
+      if (isLoading)
+        return toast.error("Wait for the previous message to finish");
+
+      setIsLoading(true);
+      setPrompt("");
+
+      const userPrompt = {
+        role: "user",
+        Content: prompt,
+        timestamp: Date.now(),
+      };
+
+      //saving user prompt to chat
+      // ✅ FIXED: Colon (:) replaced with comma (,) to correctly spread object properties
+      setChats((prevChats) =>
+        prevChats.map((chat) =>
+          chat._id === selectedChat._id
+            ? { ...chat, messages: [...chat.messages, userPrompt] }
+            : chat
+        )
+      );
+
+      //saving userpromt in selected chat
+      setSelectedChat((prev) => ({
+        ...prev,
+        messages: [...prev.messages, userPrompt],
+      }));
+
+      const response = await fetch("/api/chat/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chatId: selectedChat._id,
+          prompt: promptCopy,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat._id === selectedChat._id
+              ? {
+                  ...chat,
+                  messages: [...chat.messages, data.data],
+                }
+              : chat
+          )
+        );
+
+        const message = data.data.content;
+        const messageTokens = message.split(" ");
+        let assistantMessage = {
+          role: "assistant",
+          content: message,
+          timestamp: Date.now(),
+        };
+
+        setSelectedChat((prev) => ({
+          ...prev,
+          messages: [...prev.messages, assistantMessage],
+        }));
+
+        for (let i = 0; i < messageTokens.length; i++) {
+          setTimeout(() => {
+            assistantMessage.content = messageTokens.slice(0, i + 1).join(" ");
+            setSelectedChat((prev) => {
+              const updatedMessages = [
+                ...prev.messages.slice(0, -1),
+                assistantMessage,
+              ];
+              return {
+                ...prev,
+                messages: updatedMessages,
+              };
+            });
+          }, i * 100);
+
+          // Here you can update the UI to show the message being typed
+          console.log(messageTokens[i]); // or update state to show in UI
+        }
+      } else {
+        toast.error(data.message || "Failed to send message");
+        setPrompt(promptCopy);
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to send message");
+      setPrompt(promptCopy);
     }
   };
 
   return (
     <form
-      onSubmit={handleSubmit}
-      className={`w-full max-w-2xl bg-[#404045] p-4 rounded-3xl mt-4 transition-all`}
+      onSubmit={sendPrompt}
+      className={`w-full ${
+        false ? "max-w-3xl" : "max-w-2xl"
+      } bg-[#404045] p-4 rounded-3xl mt-4 transition-all`}
     >
-      <div className="relative">
-        <textarea
-          ref={textareaRef}
-          className="outline-none w-full resize-none overflow-y-auto break-words bg-transparent pr-10"
-          rows={1}
-          placeholder="Message DeepSeek..."
-          required
-          onChange={(e) => setPrompt(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onCompositionStart={() => setIsComposing(true)}
-          onCompositionEnd={() => setIsComposing(false)}
-          value={prompt}
-          disabled={isLoading}
-          aria-label="Chat input"
-        />
-        {prompt && (
-          <button
-            type="button"
-            onClick={() => setPrompt("")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition-opacity"
-            aria-label="Clear input"
-          >
-            {assets.close_icon && (
-              <Image
-                src={assets.close_icon}
-                alt="Clear"
-                width={16}
-                height={16}
-              />
-            )}
-          </button>
-        )}
-      </div>
+      <textarea
+        onKeyDown={handlekeyDown}
+        className="outline-none w-full resize-none overflow-hidden break-words bg-transparent"
+        rows={2}
+        placeholder="Message DeepSeek"
+        required
+        onChange={(e) => setPrompt(e.target.value)}
+        value={prompt}
+      />
 
-      <div className="flex items-center justify-between text-sm mt-3">
+      <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="flex items-center gap-2 text-xs border border-gray-300/40 px-2 py-1 rounded-full hover:bg-gray-500/20 transition"
-            aria-label="Enable DeepThink mode"
-          >
-            <Image src={assets.deepthink_icon} alt="" width={20} height={20} />
+          <p className="flex items-center gap-2 text-xs border border-gray-300/40 px-2 py-1 rounded-full cursor-pointer hover:bg-gray-500/20 transition">
+            <Image className="h-5 " src={assets.deepthink_icon} alt="" />
             DeepThink (R1)
-          </button>
-          <button
-            type="button"
-            className="flex items-center gap-2 text-xs border border-gray-300/40 px-2 py-1 rounded-full hover:bg-gray-500/20 transition"
-            aria-label="Enable search mode"
-          >
-            <Image src={assets.search_icon} alt="" width={20} height={20} />
+          </p>
+          <p className="flex items-center gap-2 text-xs border border-gray-300/40 px-2 py-1 rounded-full cursor-pointer hover:bg-gray-500/20 transition">
+            <Image className="h-5 " src={assets.search_icon} alt="" />
             Search
-          </button>
+          </p>
         </div>
 
         <div className="flex items-center gap-2">
+          <Image className="w-4  cursor-pointer" src={assets.pin_icon} alt="" />
           <button
-            type="button"
-            className="opacity-70 hover:opacity-100 transition-opacity"
-            aria-label="Pin conversation"
+            className={`${
+              prompt ? "bg-primary" : "bg-[#71717a]"
+            } rounded-full p-2 cursor-pointer`}
           >
             <Image
-              src={assets.pin_icon}
-              alt="Pin"
-              width={16}
-              height={16}
-              style={{
-                width: "100%",
-                height: "auto",
-              }}
-            />
-          </button>
-          <button
-            type="submit"
-            disabled={!prompt.trim() || isLoading}
-            className={`rounded-full p-2 transition-colors ${
-              prompt.trim()
-                ? "bg-primary hover:bg-primary/90"
-                : "bg-[#71717a] cursor-not-allowed"
-            }`}
-            aria-label="Send message"
-          >
-            <Image
-              src={prompt.trim() ? assets.arrow_icon : assets.arrow_icon_dull}
-              alt="Send"
-              width={14}
-              height={14}
+              className="w-3.5 h-auto"
+              src={prompt ? assets.arrow_icon : assets.arrow_icon_dull}
+              alt=""
             />
           </button>
         </div>

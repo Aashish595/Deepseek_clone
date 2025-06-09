@@ -1,32 +1,92 @@
-"use client"
+"use client"; // 👈 This tells Next.js it's a client component
 
-import { useUser } from "@clerk/nextjs";
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState } from "react";
+import { useUser, useAuth } from "@clerk/nextjs";
+import axios from "axios";
+import toast from "react-hot-toast";
 
-export const AppContext = createContext();
+// ✅ 1. Create the context
+const AppContext = createContext();
 
-export const useAppContext = () => {
-    const context = useContext(AppContext);
-    if (!context) {
-        throw new Error('useAppContext must be used within an AppContextProvider');
-    }
-    return context;
-}
+// ✅ 2. Export the context hook
+export const useAppContext = () => useContext(AppContext);
 
+// ✅ 3. Export the provider
 export const AppContextProvider = ({ children }) => {
-    const { isLoaded, user } = useUser();
-    const [contextUser, setContextUser] = useState(null);
+  const { user } = useUser();
+  const { getToken } = useAuth();
 
-    useEffect(() => {
-        if (isLoaded) {
-            setContextUser(user);
+  const [chats, setChats] = useState([]);
+  const [selectedChat, setSelectedChat] = useState({ messages: [] });
+
+  const [messages, setMessages] = useState([]); // Add this inside AppContextProvider
+
+  const createNewChat = async () => {
+    try {
+      if (!user) return null;
+      const token = await getToken();
+
+      await axios.post(
+        "/api/chat/create",
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-    }, [isLoaded, user]);
+      );
 
-    const value = {
-        user: contextUser,
-        isUserLoaded: isLoaded
+      fetchUserChats();
+    } catch (error) {
+      toast.error(error.message || "Failed to create new chat");
     }
+  };
 
-    return <AppContext.Provider value={value}>{children}</AppContext.Provider>
-}
+  const fetchUserChats = async () => {
+    try {
+      const token = await getToken();
+      const { data } = await axios.get(
+        "/api/chat/get",
+        // {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (data.success) {
+        setChats(data.data);
+
+        if (data.data.length > 0) {
+          data.data.sort(
+            (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+          );
+          setSelectedChat(data.data[0]);
+        } else {
+          setSelectedChat({ messages: [] });
+        }
+      } else {
+        toast.error(data.message || "Failed to fetch user chats");
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch user chats");
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchUserChats();
+    }
+  }, [user]);
+
+  const value = {
+    user,
+    chats,
+    setChats,
+    selectedChat,
+    setSelectedChat,
+    fetchUserChats,
+    createNewChat,
+    messages,
+    setMessages,
+  };
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+};
