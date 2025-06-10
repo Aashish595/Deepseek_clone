@@ -1,4 +1,9 @@
 @import "tailwindcss";
+/* Example: prism-tomorrow.css */
+/* @import "prismjs/themes/prism-tomorrow.css"; */
+/* @import 'prism-themes/themes/prism-vs.css';            
+@import 'prism-themes/themes/prism-vsc-dark-plus.css';  */
+
 
 @theme {
   --color-primary: #4d6bfe ; /* Example primary color */
@@ -17,4 +22,12 @@ html{
 }
 .loader div:nth-child(3){
   animation-delay: 0.4s;
+}
+
+code{
+  white-space: pre-wrap !important; /* Allow code to wrap */
+}
+
+pre{
+  border-radius: 10px !important; /* Add border radius to pre elements */
 }
