@@ -1,23 +1,71 @@
 
+// import connectDB from "@/config/db";
+// import Chat from "@/models/Chat";
+// import { getAuth } from "@clerk/nextjs/server";  
+// import { NextResponse } from "next/server";
+
+// export async function GET(req) {
+//     try {
+//         const { userId } = getAuth(req);  // Updated usage
+
+//         if(!userId){
+//             return NextResponse.json({ success: false, message: "User not authenticated", })
+//         }
+
+//         // connect to database and fetch all chats for the user
+//         await connectDB();
+//         const userChatData = await Chat.find({ userId });
+
+//         return NextResponse.json({ success: true, userChatData });
+//     } catch (error) {
+//         return NextResponse.json({ success: false, error: error.message });
+//     }
+// }
+
 import connectDB from "@/config/db";
 import Chat from "@/models/Chat";
-import { getAuth } from "@clerk/nextjs/server";  
+import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
     try {
-        const { userId } = getAuth(req);  // Updated usage
+        const { userId } = getAuth(req);
 
-        if(!userId){
-            return NextResponse.json({ success: false, message: "User not authenticated", })
+        if (!userId) {
+            return NextResponse.json(
+                { success: false, message: "User not authenticated" },
+                { status: 401 }
+            );
         }
 
-        // connect to database and fetch all chats for the user
         await connectDB();
-        const userChatData = await Chat.find({ userId });
+        
+        // Add sorting by updatedAt and proper error handling
+        const userChatData = await Chat.find({ userId })
+            .sort({ updatedAt: -1 }) // Sort by newest first
+            .lean(); // Convert to plain JS objects
 
-        return NextResponse.json({ success: true, userChatData });
+        if (!userChatData) {
+            return NextResponse.json(
+                { success: false, message: "No chats found" },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json({ 
+            success: true, 
+            data: userChatData // Changed from userChatData to data for consistency
+        });
+
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message });
+        console.error("GET /api/chat/get error:", error);
+        return NextResponse.json(
+            { 
+                success: false, 
+                message: "Internal server error",
+                error: error.message 
+            },
+            { status: 500 }
+        );
     }
 }

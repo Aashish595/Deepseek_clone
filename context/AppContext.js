@@ -1,25 +1,21 @@
-"use client"; // 👈 This tells Next.js it's a client component
+"use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-// ✅ 1. Create the context
 const AppContext = createContext();
 
-// ✅ 2. Export the context hook
 export const useAppContext = () => useContext(AppContext);
 
-// ✅ 3. Export the provider
 export const AppContextProvider = ({ children }) => {
   const { user } = useUser();
   const { getToken } = useAuth();
 
   const [chats, setChats] = useState([]);
-  const [selectedChat, setSelectedChat] = useState({ messages: [] });
-
-  const [messages, setMessages] = useState([]); // Add this inside AppContextProvider
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [messages, setMessages] = useState([]);
 
   const createNewChat = async () => {
     try {
@@ -41,34 +37,32 @@ export const AppContextProvider = ({ children }) => {
   };
 
   const fetchUserChats = async () => {
-    try {
-      const token = await getToken();
-      const { data } = await axios.get(
-        "/api/chat/get",
-        // {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (data.success) {
-        setChats(data.data);
-
-        if (data.data.length > 0) {
-          data.data.sort(
-            (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-          );
-          setSelectedChat(data.data[0]);
-        } else {
-          setSelectedChat({ messages: [] });
-        }
-      } else {
-        toast.error(data.message || "Failed to fetch user chats");
+  try {
+    const token = await getToken();
+    const { data } = await axios.get(
+      "/api/chat/get",
+      {
+        headers: { Authorization: `Bearer ${token}` },
       }
-    } catch (error) {
-      toast.error(error.message || "Failed to fetch user chats");
+    );
+
+    if (data?.success && Array.isArray(data?.data)) {
+      const sortedChats = data.data.sort(
+        (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+      );
+      setChats(sortedChats);
+      setSelectedChat(sortedChats[0] || null);
+    } else {
+      toast.error(data?.message || "Failed to fetch user chats");
+      setChats([]);
+      setSelectedChat(null);
     }
-  };
+  } catch (error) {
+    toast.error(error.message || "Failed to fetch user chats");
+    setChats([]);
+    setSelectedChat(null);
+  }
+};
 
   useEffect(() => {
     if (user) {
