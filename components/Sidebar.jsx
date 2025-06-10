@@ -1,14 +1,14 @@
-import { assets } from '@/assets/assets'
-import { useAppContext } from '@/context/AppContext';
-import { useClerk, UserButton } from '@clerk/nextjs';
-import Image from 'next/image'
-import React, { useState } from 'react'
-import ChatLabel from './ChatLabel';
+import { assets } from "@/assets/assets";
+import { useAppContext } from "@/context/AppContext";
+import { useClerk, UserButton } from "@clerk/nextjs";
+import Image from "next/image";
+import React, { useState } from "react";
+import ChatLabel from "./ChatLabel";
 
 const Sidebar = ({ expand, setExpand }) => {
   const { openSignIn } = useClerk();
-  const { user } = useAppContext();
-  const [openMenu, setOpenMenu] = useState({ id: 0, open: false});
+  const { user, chats, createNewChat } = useAppContext();
+  const [openMenu, setOpenMenu] = useState({ id: 0, open: false });
 
   return (
     <div
@@ -57,6 +57,7 @@ const Sidebar = ({ expand, setExpand }) => {
 
         {/* button to start chat */}
         <button
+          onClick={createNewChat}
           className={`mt-8 flex items-center justify-center cursor-pointer ${
             expand
               ? "bg-primary hover:opacity-90 rounded-2xl gap-2 p-2.5 w-max"
@@ -82,8 +83,16 @@ const Sidebar = ({ expand, setExpand }) => {
           }`}
         >
           <p className="my-1">Recents</p>
+          {chats.map((chat,index) => (
+            <ChatLabel
+              key={index}
+              name={chat.name}
+              id={chat._id}
+              openMenu={openMenu}
+              setOpenMenu={setOpenMenu}
+            />
+          ))}
           {/* chatLabel */}
-          <ChatLabel openMenu={openMenu} setOpenMenu={setOpenMenu}  />
         </div>
       </div>
 
@@ -124,15 +133,16 @@ const Sidebar = ({ expand, setExpand }) => {
 
         {/* user icon and profile */}
         <div
-          onClick={ user ? null : openSignIn }
+          onClick={user ? null : openSignIn}
           className={`flex items-center ${
             expand ? "hover:bg-white/10 rounded-lg" : "justify-center w-full"
           } gap-3 text-white/60 text-sm p-2 mt-2 cursor-pointer`}
         >
-          {
-            user ? <UserButton />
-            : <Image src={assets.profile_icon} alt="" className="w-7" /> 
-          }
+          {user ? (
+            <UserButton />
+          ) : (
+            <Image src={assets.profile_icon} alt="" className="w-7" />
+          )}
           {expand && <span>My Profile</span>}
         </div>
       </div>
@@ -140,4 +150,4 @@ const Sidebar = ({ expand, setExpand }) => {
   );
 };
 
-export default Sidebar
+export default Sidebar;
