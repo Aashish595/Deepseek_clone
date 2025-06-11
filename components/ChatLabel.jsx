@@ -5,7 +5,7 @@ import Image from "next/image";
 import React from "react";
 import toast from "react-hot-toast";
 
-const ChatLabel = ({ openMenu, setOpenMenu }) => {
+const ChatLabel = ({ id, name, openMenu, setOpenMenu }) => {
   const { fetchUserChats, chats, setSelectedChat } = useAppContext();
 
   const selectChat = () => {
@@ -14,11 +14,12 @@ const ChatLabel = ({ openMenu, setOpenMenu }) => {
     console.log(chatData);
   };
 
-  const renameHandler = async () => {
+  const renameHandler = async (e) => {
+    e.stopPropagation();
     try {
-      const newName = prompt("Enter new chat name:");
+      const newName = prompt("Enter new chat name:", name);
       if (!newName) return;
-      const { data } = await axios.post(`/api/chats/rename`, {
+      const { data } = await axios.post(`/api/chat/rename`, {
         chatId: id,
         name: newName,
       });
@@ -30,27 +31,28 @@ const ChatLabel = ({ openMenu, setOpenMenu }) => {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.message || "Failed to rename chat");
+      toast.error(error.response?.data?.message || "Failed to rename chat");
     }
+  };
 
-    const deleteHandler = async () => {
-      try {
-        const confirm = window.confirm(
-          "Are you sure you want to delete this chat?"
-        );
-        if (!confirm) return;
-        const { data } = await axios.post(`/api/chats/delete`, { chatId: id });
-        if (data.success) {
-          fetchUserChats();
-          setOpenMenu({ id: 0, open: false });
-          toast.success(data.message);
-        } else {
-          toast.error(data.message);
-        }
-      } catch (error) {
-        toast.error(error.message || "Failed to delete chat");
+  const deleteHandler = async (e) => {
+    e.stopPropagation();
+    try {
+      const confirm = window.confirm(
+        "Are you sure you want to delete this chat?"
+      );
+      if (!confirm) return;
+      const { data } = await axios.post(`/api/chat/delete`, { chatId: id });
+      if (data.success) {
+        fetchUserChats();
+        setOpenMenu({ id: 0, open: false });
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
       }
-    };
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete chat");
+    }
   };
 
   return (
@@ -58,7 +60,7 @@ const ChatLabel = ({ openMenu, setOpenMenu }) => {
       onClick={selectChat}
       className="flex items-center justify-between p-2 text-white/80 hover:bg-white/10 rounded-lg text-sm group cursor-pointer"
     >
-      <p className="group-hover:max-w-5/6 truncate"> {name} </p>
+      <p className="group-hover:max-w-5/6 truncate">{name}</p>
 
       {/* chat edit and delete option */}
       <div
