@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-![Demo App](./assets/deepseek-clone.png)
+![Demo App](./assets/deepseek_clone.png)
 
 First, run the development server:
 
