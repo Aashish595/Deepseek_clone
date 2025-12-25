@@ -11,9 +11,8 @@
   "dependencies": {
     "@clerk/nextjs": "^6.21.0",
     "@clerk/types": "^4.60.0",
-    "@google/genai": "^1.4.0",
-    "@google/generative-ai": "^0.24.1",
     "axios": "^1.9.0",
+    "groq-sdk": "^0.37.0",
     "mongoose": "^8.15.1",
     "next": "15.3.2",
     "openai": "^5.1.1",
@@ -30,6 +29,10 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/estree": "^1.0.8",
+    "@types/estree-jsx": "^1.0.5",
+    "@types/hast": "^3.0.4",
+    "@types/mdast": "^4.0.4",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "tailwindcss": "^4"

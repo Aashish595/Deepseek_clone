@@ -71,49 +71,60 @@ const PromptBox = ({ isLoading, setIsLoading }) => {
         prompt: promptCopy,
       });
 
-      if (data?.success) {
-        const aiResponse = data.data;
+    if (data?.success) {
+  const aiText = data.text;
 
-        // Typewriter effect
-        const messageTokens = aiResponse.content.split(" ");
-        let displayedContent = "";
+  if (!aiText) {
+    throw new Error("Empty AI response");
+  }
 
-        for (let i = 0; i < messageTokens.length; i++) {
-          setTimeout(() => {
-            displayedContent += (i > 0 ? " " : "") + messageTokens[i];
-            setSelectedChat((prev) => {
-              const updatedMessages = [...(prev.messages || [])];
-              const lastUserMsgIndex = updatedMessages.findLastIndex(
-                (msg) => msg.role === "user"
-              );
-              updatedMessages[lastUserMsgIndex + 1] = {
-                role: "assistant",
-                content: displayedContent,
-                timestamp: Date.now(),
-              };
-              return { ...prev, messages: updatedMessages };
-            });
-          }, i * 50);
-        }
+  const messageTokens = aiText.split(" ");
+  let displayedContent = "";
 
-        // Final save in state
-        setTimeout(() => {
-          setChats((prevChats) =>
-            prevChats.map((chat) =>
-              chat._id === activeChat._id
-                ? {
-                    ...chat,
-                    messages: [
-                      ...(chat.messages || []),
-                      userMessage,
-                      aiResponse,
-                    ],
-                  }
-                : chat
-            )
-          );
-        }, messageTokens.length * 50 + 100);
-      } else {
+  for (let i = 0; i < messageTokens.length; i++) {
+    setTimeout(() => {
+      displayedContent += (i > 0 ? " " : "") + messageTokens[i];
+
+      setSelectedChat((prev) => {
+        const updatedMessages = [...(prev?.messages || [])];
+        const lastUserIndex = updatedMessages.findLastIndex(
+          (msg) => msg.role === "user"
+        );
+
+        updatedMessages[lastUserIndex + 1] = {
+          role: "assistant",
+          content: displayedContent,
+          timestamp: Date.now(),
+        };
+
+        return { ...prev, messages: updatedMessages };
+      });
+    }, i * 50);
+  }
+
+  // Final save
+  setTimeout(() => {
+    setChats((prevChats) =>
+      prevChats.map((chat) =>
+        chat._id === activeChat._id
+          ? {
+              ...chat,
+              messages: [
+                ...(chat.messages || []),
+                userMessage,
+                {
+                  role: "assistant",
+                  content: aiText,
+                  timestamp: Date.now(),
+                },
+              ],
+            }
+          : chat
+      )
+    );
+  }, messageTokens.length * 50 + 100);
+}
+else {
         throw new Error(data?.message || "AI failed to respond");
       }
     } catch (error) {
@@ -128,11 +139,13 @@ const PromptBox = ({ isLoading, setIsLoading }) => {
   return (
     <form
       onSubmit={sendPrompt}
-      className={`w-full ${ selectedChat?.messages.length > 0 ? "max-w-3xl" : " max-w-2xl "} bg-[#404045] p-4 rounded-3xl mt-4 transition-all`}
+      className={`w-full ${
+        selectedChat?.messages.length > 0 ? "max-w-3xl" : " max-w-2xl "
+      } bg-[#404045] p-4 rounded-3xl mt-4 transition-all`}
     >
       <textarea
         onKeyDown={handleKeyDown}
-        className="outline-none w-full resize-none overflow-hidden break-words bg-transparent"
+        className="outline-none w-full resize-none overflow-hidden wrap-break-word bg-transparent"
         rows={2}
         placeholder="Message DeepSeek"
         required
