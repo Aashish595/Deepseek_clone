@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+DeepSeek – AI Chat Application
 
-## Getting Started
+A modern AI-powered chat application built with Next.js featuring authentication, real-time AI responses, syntax-highlighted code blocks, and a clean developer-focused UI.
 
-First, run the development server:
+🚀 Live Demo
 
-```bash
+👉 (Add your deployed Vercel link here)
+
+✨ Features
+👤 User Features
+
+Secure authentication using Clerk
+
+AI-powered chat using OpenAI / Groq SDK
+
+Markdown & code block rendering with syntax highlighting
+
+Error handling with graceful fallbacks
+
+Toast notifications for better UX
+
+🛠️ Developer Features
+
+Server Actions & App Router (Next.js)
+
+Optimized fonts using next/font
+
+Clean and scalable project structure
+
+ESLint configured for best practices
+
+Tailwind CSS for rapid UI development
+
+🧰 Tech Stack
+Frontend
+
+Next.js 16
+
+React 19
+
+Tailwind CSS
+
+Axios
+
+React Markdown
+
+PrismJS (code highlighting)
+
+React Hot Toast
+
+Backend / Services
+
+OpenAI SDK
+
+Groq SDK
+
+MongoDB + Mongoose
+
+Clerk Authentication
+
+Svix (Webhooks)
+
+📦 NPM Packages Used
+Dependencies
+@clerk/nextjs
+axios
+groq-sdk
+mongoose
+openai
+react-markdown
+prismjs
+react-hot-toast
+
+Dev Dependencies
+eslint
+eslint-config-next
+tailwindcss
+@tailwindcss/postcss
+
+⚙️ Getting Started
+1️⃣ Clone the repository
+git clone https://github.com/your-username/deepseek.git
+cd deepseek
+
+2️⃣ Install dependencies
+npm install
+# or
+yarn install
+
+3️⃣ Setup Environment Variables
+
+Create a .env.local file:
+
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+
+OPENAI_API_KEY=
+GROQ_API_KEY=
+
+MONGODB_URI=
+
+▶️ Run the Development Server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Open http://localhost:3000
+ to view the app.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+🏗️ Build for Production
+npm run build
+npm start
 
-## Learn More
+☁️ Deployment
 
-To learn more about Next.js, take a look at the following resources:
+The app is optimized for Vercel deployment.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+vercel deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+📚 Learn More
 
-## Deploy on Vercel
+Next.js Documentation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Clerk Docs
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+OpenAI API
+
+👨‍💻 Author
+
+Gurudas Maurya (Aashish)
+Full Stack Developer | MERN | Next.js
+
+🔗 GitHub: https://github.com/Aashish595
+
+🔗 LinkedIn: https://www.linkedin.com/in/aashish959/
