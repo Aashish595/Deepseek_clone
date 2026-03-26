@@ -4,7 +4,7 @@ A modern AI-powered chat application built with Next.js featuring authentication
 
 🚀 Live Demo
 
-👉 (Add your deployed Vercel link here)
+👉 [(Live link)](https://deepseek-clone-pi-one.vercel.app/)
 
 ✨ Features
 👤 User Features
